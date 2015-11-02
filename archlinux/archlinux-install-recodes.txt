@@ -1,0 +1,81 @@
+archlinux 安装步骤
+1. 下载archlinux镜像
+http://mirrors.163.com/archlinux/iso/2015.10.01/
+2. 在vmware上建立一个linux的虚拟机将下载好的镜像作为启动镜像（具体步骤略）
+3. 启动建好的虚拟机
+4. 分区
+5. 安装基础镜像
+6. 安装grub引导
+
+
+
+fdisk /dev/sda 
+mkfs.ext4 /dev/sda1 
+mount /dev/sda1 /mnt 
+vi /etc/pacman.d/mirrorlist 
+找带China的，PageDown PageUp 滚屏，Ctrl+V 向下翻页，Ctrl+Y 向上翻页， Alt+6 复制当前行，Ctrl+u 粘贴，Ctrl+x 退出，保存按Y，回车。
+163站点在最下面不远处，我复制了2个，放在最上面，如图所示。
+pacstrap -i /mnt base 
+genfstab -U -p /mnt >> /mnt/etc/fstab
+cat /mnt/etc/fstab 
+第一条是生成，第二条是查看生成的内容，没问题就Ctrl+x退出即可。我的如下图：
+
+先要chroot切换到新系统，命令如下：
+
+arch-chroot /mnt
+a、配置locale，语言
+
+编辑/etc/locale.gen，这个文件所有的内容都是注释的，所以在最上面添加en_US.UTF-8 UTF-8即可。
+
+ nano /etc/locale.gen
+
+en_US.UTF-8 UTF-8
+
+然后执行localegen
+
+locale-gen
+
+接着配置locale.conf
+
+echo LANG=en_US.UTF-8 > /etc/locale.conf
+export LANG=en_US.UTF-8
+b、给计算机起名
+
+echo myhostname > /etc/hostname
+c、配置网络
+
+systemctl enable dhcpcd.service
+
+动态ip的方式
+d、设置密码
+
+passwd
+
+给root设置一个密码，两次输入要一致。
+
+grub-install --target=i386-pc --recheck /dev/sda
+建立 init 引导盘
+为了确保 grub 能加载 Linux 内核,所以需要建立引导盘镜像文件,使用命令# mkinitcpio -p linux,结
+果截图如下:
+e、安装GRUB
+
+pacman -S grub
+grub-install /dev/sda
+
+然后配置grub
+
+grub-mkconfig -o /boot/grub/grub.cfg
+
+8、卸载mnt，重启
+
+退出chroot
+
+exit
+
+卸载mnt
+
+umount /mnt
+
+重启
+
+reboot
